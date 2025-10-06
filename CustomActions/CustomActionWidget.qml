@@ -16,6 +16,9 @@ PluginComponent {
     property string displayText: variantData?.displayText || ""
     property string displayCommand: variantData?.displayCommand || ""
     property string clickCommand: variantData?.clickCommand || ""
+    property string middleClickCommand: variantData?.middleClickCommand || ""
+    property string rightClickCommand: variantData?.rightClickCommand || ""
+    property int updateInterval: variantData?.updateInterval || 0
     property bool showIcon: variantData?.showIcon ?? true
     property bool showText: variantData?.showText ?? true
 
@@ -28,11 +31,30 @@ PluginComponent {
         }
     }
 
+    onUpdateIntervalChanged: {
+        updateTimer.restart()
+    }
+
     Component.onCompleted: {
         if (displayCommand) {
             Qt.callLater(refreshOutput)
         } else {
             currentOutput = displayText
+        }
+        if (updateInterval > 0) {
+            updateTimer.start()
+        }
+    }
+
+    Timer {
+        id: updateTimer
+        interval: root.updateInterval * 1000
+        repeat: true
+        running: false
+        onTriggered: {
+            if (root.displayCommand) {
+                root.refreshOutput()
+            }
         }
     }
 
@@ -46,16 +68,17 @@ PluginComponent {
         displayProcess.running = true
     }
 
-    function executeClickAction() {
-        if (!clickCommand) return
+    function executeCommand(command) {
+        if (!command) return
 
         isLoading = true
-        clickProcess.running = true
+        actionProcess.command = ["sh", "-c", command]
+        actionProcess.running = true
     }
 
     Process {
         id: displayProcess
-        command: ["bash", "-c", root.displayCommand]
+        command: ["sh", "-c", root.displayCommand]
         running: false
 
         stdout: SplitParser {
@@ -73,8 +96,8 @@ PluginComponent {
     }
 
     Process {
-        id: clickProcess
-        command: ["bash", "-c", root.clickCommand]
+        id: actionProcess
+        command: ["sh", "-c", ""]
         running: false
 
         onExited: (exitCode, exitStatus) => {
@@ -84,60 +107,94 @@ PluginComponent {
                     root.refreshOutput()
                 }
             } else {
-                console.warn("CustomActions: Click command failed with code", exitCode)
+                console.warn("CustomActions: Action command failed with code", exitCode)
             }
         }
     }
 
     pillClickAction: () => {
-        if (clickCommand) {
-            executeClickAction()
+        if (root.clickCommand) {
+            root.executeCommand(root.clickCommand)
         }
     }
 
     horizontalBarPill: Component {
-        Row {
-            spacing: Theme.spacingXS
+        MouseArea {
+            implicitWidth: contentRow.implicitWidth
+            implicitHeight: contentRow.implicitHeight
+            acceptedButtons: Qt.MiddleButton | Qt.RightButton
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
 
-            DankIcon {
-                name: root.displayIcon
-                size: Theme.iconSize - 6
-                color: Theme.surfaceText
-                anchors.verticalCenter: parent.verticalCenter
-                visible: root.showIcon
+            onClicked: (mouse) => {
+                if (mouse.button === Qt.MiddleButton && root.middleClickCommand) {
+                    root.executeCommand(root.middleClickCommand)
+                } else if (mouse.button === Qt.RightButton && root.rightClickCommand) {
+                    root.executeCommand(root.rightClickCommand)
+                }
             }
 
-            StyledText {
-                text: root.currentOutput || ""
-                font.pixelSize: Theme.fontSizeSmall
-                font.weight: Font.Medium
-                color: Theme.surfaceText
-                anchors.verticalCenter: parent.verticalCenter
-                visible: root.showText && root.currentOutput
+            Row {
+                id: contentRow
+                spacing: Theme.spacingXS
+
+                DankIcon {
+                    name: root.displayIcon
+                    size: Theme.iconSize - 6
+                    color: Theme.surfaceText
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: root.showIcon
+                }
+
+                StyledText {
+                    text: root.currentOutput || ""
+                    font.pixelSize: Theme.fontSizeSmall
+                    font.weight: Font.Medium
+                    color: Theme.surfaceText
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: root.showText && root.currentOutput
+                }
             }
         }
     }
 
     verticalBarPill: Component {
-        Column {
-            spacing: Theme.spacingXS
+        MouseArea {
+            implicitWidth: contentColumn.implicitWidth
+            implicitHeight: contentColumn.implicitHeight
+            acceptedButtons: Qt.MiddleButton | Qt.RightButton
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
 
-            DankIcon {
-                name: root.displayIcon
-                size: Theme.iconSize - 6
-                color: Theme.surfaceText
-                anchors.horizontalCenter: parent.horizontalCenter
-                visible: root.showIcon
+            onClicked: (mouse) => {
+                if (mouse.button === Qt.MiddleButton && root.middleClickCommand) {
+                    root.executeCommand(root.middleClickCommand)
+                } else if (mouse.button === Qt.RightButton && root.rightClickCommand) {
+                    root.executeCommand(root.rightClickCommand)
+                }
             }
 
-            StyledText {
-                text: root.currentOutput || ""
-                font.pixelSize: Theme.fontSizeSmall
-                font.weight: Font.Medium
-                color: Theme.surfaceText
-                anchors.horizontalCenter: parent.horizontalCenter
-                visible: root.showText && root.currentOutput
-                rotation: 90
+            Column {
+                id: contentColumn
+                spacing: Theme.spacingXS
+
+                DankIcon {
+                    name: root.displayIcon
+                    size: Theme.iconSize - 6
+                    color: Theme.surfaceText
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    visible: root.showIcon
+                }
+
+                StyledText {
+                    text: root.currentOutput || ""
+                    font.pixelSize: Theme.fontSizeSmall
+                    font.weight: Font.Medium
+                    color: Theme.surfaceText
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    visible: root.showText && root.currentOutput
+                    rotation: 90
+                }
             }
         }
     }

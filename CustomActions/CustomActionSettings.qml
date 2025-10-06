@@ -9,11 +9,41 @@ PluginSettings {
     id: root
     pluginId: "customActions"
 
+    property string editingVariantId: ""
+
     onVariantsChanged: {
         variantsModel.clear()
         for (var i = 0; i < variants.length; i++) {
             variantsModel.append(variants[i])
         }
+    }
+
+    function loadVariantForEditing(variantData) {
+        editingVariantId = variantData.id || ""
+        nameField.text = variantData.name || ""
+        iconField.text = variantData.icon || ""
+        displayTextField.text = variantData.displayText || ""
+        displayCommandField.text = variantData.displayCommand || ""
+        clickCommandField.text = variantData.clickCommand || ""
+        middleClickCommandField.text = variantData.middleClickCommand || ""
+        rightClickCommandField.text = variantData.rightClickCommand || ""
+        updateIntervalField.text = (variantData.updateInterval || 0).toString()
+        showIconToggle.checked = variantData.showIcon !== undefined ? variantData.showIcon : true
+        showTextToggle.checked = variantData.showText !== undefined ? variantData.showText : true
+    }
+
+    function clearForm() {
+        editingVariantId = ""
+        nameField.text = ""
+        iconField.text = ""
+        displayTextField.text = ""
+        displayCommandField.text = ""
+        clickCommandField.text = ""
+        middleClickCommandField.text = ""
+        rightClickCommandField.text = ""
+        updateIntervalField.text = "0"
+        showIconToggle.checked = true
+        showTextToggle.checked = true
     }
 
     StyledText {
@@ -44,11 +74,24 @@ PluginSettings {
             anchors.margins: Theme.spacingL
             spacing: Theme.spacingM
 
-            StyledText {
-                text: "Create New Action"
-                font.pixelSize: Theme.fontSizeMedium
-                font.weight: Font.Medium
-                color: Theme.surfaceText
+            Row {
+                width: parent.width
+                spacing: Theme.spacingM
+
+                StyledText {
+                    text: root.editingVariantId ? "Edit Action" : "Create New Action"
+                    font.pixelSize: Theme.fontSizeMedium
+                    font.weight: Font.Medium
+                    color: Theme.surfaceText
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                DankButton {
+                    text: "Cancel"
+                    iconName: "close"
+                    visible: root.editingVariantId !== ""
+                    onClicked: root.clearForm()
+                }
             }
 
             Row {
@@ -137,7 +180,7 @@ PluginSettings {
                 spacing: Theme.spacingXS
 
                 StyledText {
-                    text: "Click Command (optional)"
+                    text: "Left Click Command (optional)"
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceVariantText
                 }
@@ -149,7 +192,67 @@ PluginSettings {
                 }
 
                 StyledText {
-                    text: "Command to run when widget is clicked. After completion, display command refreshes."
+                    text: "Command to run on left click. After completion, display command refreshes."
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.surfaceVariantText
+                    wrapMode: Text.WordWrap
+                    width: parent.width
+                }
+            }
+
+            Column {
+                width: parent.width
+                spacing: Theme.spacingXS
+
+                StyledText {
+                    text: "Middle Click Command (optional)"
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.surfaceVariantText
+                }
+
+                DankTextField {
+                    id: middleClickCommandField
+                    width: parent.width
+                    placeholderText: "e.g., notify-send 'Middle clicked!'"
+                }
+            }
+
+            Column {
+                width: parent.width
+                spacing: Theme.spacingXS
+
+                StyledText {
+                    text: "Right Click Command (optional)"
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.surfaceVariantText
+                }
+
+                DankTextField {
+                    id: rightClickCommandField
+                    width: parent.width
+                    placeholderText: "e.g., notify-send 'Right clicked!'"
+                }
+            }
+
+            Column {
+                width: parent.width
+                spacing: Theme.spacingXS
+
+                StyledText {
+                    text: "Update Interval (seconds, 0 = disabled)"
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.surfaceVariantText
+                }
+
+                DankTextField {
+                    id: updateIntervalField
+                    width: parent.width
+                    placeholderText: "0"
+                    text: "0"
+                }
+
+                StyledText {
+                    text: "Automatically re-run display command every N seconds. Set to 0 to disable."
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceVariantText
                     wrapMode: Text.WordWrap
@@ -193,11 +296,17 @@ PluginSettings {
             }
 
             DankButton {
-                text: "Create Action"
-                iconName: "add"
+                text: root.editingVariantId ? "Update Action" : "Create Action"
+                iconName: root.editingVariantId ? "check" : "add"
                 onClicked: {
                     if (!nameField.text) {
                         ToastService.showError("Please enter a variant name")
+                        return
+                    }
+
+                    var interval = parseInt(updateIntervalField.text) || 0
+                    if (interval < 0) {
+                        ToastService.showError("Update interval must be 0 or greater")
                         return
                     }
 
@@ -206,20 +315,20 @@ PluginSettings {
                         displayText: displayTextField.text || "",
                         displayCommand: displayCommandField.text || "",
                         clickCommand: clickCommandField.text || "",
+                        middleClickCommand: middleClickCommandField.text || "",
+                        rightClickCommand: rightClickCommandField.text || "",
+                        updateInterval: interval,
                         showIcon: showIconToggle.checked,
                         showText: showTextToggle.checked
                     }
 
-                    createVariant(nameField.text, variantConfig)
-                    ToastService.showInfo("Action created: " + nameField.text)
+                    if (root.editingVariantId) {
+                        updateVariant(root.editingVariantId, nameField.text, variantConfig)
+                    } else {
+                        createVariant(nameField.text, variantConfig)
+                    }
 
-                    nameField.text = ""
-                    iconField.text = ""
-                    displayTextField.text = ""
-                    displayCommandField.text = ""
-                    clickCommandField.text = ""
-                    showIconToggle.checked = true
-                    showTextToggle.checked = true
+                    root.clearForm()
                 }
             }
         }
@@ -287,7 +396,7 @@ PluginSettings {
                             Column {
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: 2
-                                width: parent.width - Theme.iconSize - deleteButton.width - Theme.spacingM * 3
+                                width: parent.width - Theme.iconSize - (editButton.width + deleteButton.width + Theme.spacingXS) - Theme.spacingM * 3
 
                                 StyledText {
                                     text: model.name || "Unnamed"
@@ -303,6 +412,7 @@ PluginSettings {
                                         var parts = []
                                         if (model.displayText) parts.push("Text: " + model.displayText)
                                         if (model.displayCommand) parts.push("Cmd: " + model.displayCommand)
+                                        if (model.updateInterval && model.updateInterval > 0) parts.push("Update: " + model.updateInterval + "s")
                                         return parts.join(" | ") || "No display config"
                                     }
                                     font.pixelSize: Theme.fontSizeSmall
@@ -312,7 +422,13 @@ PluginSettings {
                                 }
 
                                 StyledText {
-                                    text: model.clickCommand ? "Click: " + model.clickCommand : "No click action"
+                                    text: {
+                                        var actions = []
+                                        if (model.clickCommand) actions.push("L: " + model.clickCommand)
+                                        if (model.middleClickCommand) actions.push("M: " + model.middleClickCommand)
+                                        if (model.rightClickCommand) actions.push("R: " + model.rightClickCommand)
+                                        return actions.join(" | ") || "No click actions"
+                                    }
                                     font.pixelSize: Theme.fontSizeSmall
                                     color: Theme.surfaceVariantText
                                     width: parent.width
@@ -320,29 +436,57 @@ PluginSettings {
                                 }
                             }
 
-                            Rectangle {
-                                id: deleteButton
-                                width: 32
-                                height: 32
-                                radius: 16
-                                color: deleteArea.containsMouse ? Theme.error : "transparent"
+                            Row {
                                 anchors.verticalCenter: parent.verticalCenter
+                                spacing: Theme.spacingXS
 
-                                DankIcon {
-                                    anchors.centerIn: parent
-                                    name: "delete"
-                                    size: 16
-                                    color: deleteArea.containsMouse ? Theme.onError : Theme.surfaceVariantText
+                                Rectangle {
+                                    id: editButton
+                                    width: 32
+                                    height: 32
+                                    radius: 16
+                                    color: editArea.containsMouse ? Theme.primary : "transparent"
+
+                                    DankIcon {
+                                        anchors.centerIn: parent
+                                        name: "edit"
+                                        size: 16
+                                        color: editArea.containsMouse ? Theme.onPrimary : Theme.surfaceVariantText
+                                    }
+
+                                    MouseArea {
+                                        id: editArea
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            root.loadVariantForEditing(model)
+                                        }
+                                    }
                                 }
 
-                                MouseArea {
-                                    id: deleteArea
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        removeVariant(model.id)
-                                        ToastService.showInfo("Action removed: " + model.name)
+                                Rectangle {
+                                    id: deleteButton
+                                    width: 32
+                                    height: 32
+                                    radius: 16
+                                    color: deleteArea.containsMouse ? Theme.error : "transparent"
+
+                                    DankIcon {
+                                        anchors.centerIn: parent
+                                        name: "delete"
+                                        size: 16
+                                        color: deleteArea.containsMouse ? Theme.onError : Theme.surfaceVariantText
+                                    }
+
+                                    MouseArea {
+                                        id: deleteArea
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            removeVariant(model.id)
+                                        }
                                     }
                                 }
                             }
