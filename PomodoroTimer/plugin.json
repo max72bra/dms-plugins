@@ -1,0 +1,15 @@
+{
+    "id": "pomodoroTimer",
+    "name": "Pomodoro Timer",
+    "description": "Productivity timer with 25-minute work sessions and breaks",
+    "version": "1.0.0",
+    "author": "Avenge Media",
+    "icon": "timer",
+    "firstParty": true,
+    "component": "./PomodoroWidget.qml",
+    "settings": "./PomodoroSettings.qml",
+    "permissions": [
+        "settings_read",
+        "settings_write"
+    ]
+}
