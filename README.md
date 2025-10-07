@@ -23,3 +23,9 @@ A timer that is intended to improve productivity using the [Pomodoro technique](
 Trigger scripts based on various system events, such as `onWallpaperChanged`, `onVolumeChanged`, etc.
 
 <img width="472" height="593" alt="image" src="https://github.com/user-attachments/assets/83e89b5b-0636-4b8e-ba29-1fa4d12169a0" />
+
+### [Dank Battery Alerts](./DankBatteryAlerts)
+
+Trigger notifications when battery reaches low charge levels.
+
+<img width="497" height="710" alt="image" src="https://github.com/user-attachments/assets/4302d886-eb87-41d4-a9a4-1eeaadd787c6" />
