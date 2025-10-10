@@ -12,27 +12,90 @@ PluginComponent {
     property string variantId: ""
     property var variantData: null
 
-    property string displayIcon: variantData?.icon || "terminal"
-    property string displayText: variantData?.displayText || ""
-    property string displayCommand: variantData?.displayCommand || ""
-    property string clickCommand: variantData?.clickCommand || ""
-    property string middleClickCommand: variantData?.middleClickCommand || ""
-    property string rightClickCommand: variantData?.rightClickCommand || ""
-    property int updateInterval: variantData?.updateInterval || 0
-    property bool showIcon: variantData?.showIcon ?? true
-    property bool showText: variantData?.showText ?? true
+    property string displayIcon: "terminal"
+    property string displayText: ""
+    property string displayCommand: ""
+    property string clickCommand: ""
+    property string middleClickCommand: ""
+    property string rightClickCommand: ""
+    property int updateInterval: 0
+    property bool showIcon: true
+    property bool showText: true
 
-    property string currentOutput: displayText
+    property string currentOutput: ""
     property bool isLoading: false
+
+    onVariantDataChanged: {
+        updatePropertiesFromVariantData()
+    }
+
+    Connections {
+        target: PluginService
+        function onPluginDataChanged(changedPluginId) {
+            if (changedPluginId === "dankActions" && variantId) {
+                const newData = PluginService.getPluginVariantData("dankActions", variantId)
+                if (newData) {
+                    variantData = newData
+                }
+            }
+        }
+    }
+
+    function updatePropertiesFromVariantData() {
+        if (!variantData) {
+            displayIcon = "terminal"
+            displayText = ""
+            displayCommand = ""
+            clickCommand = ""
+            middleClickCommand = ""
+            rightClickCommand = ""
+            updateInterval = 0
+            showIcon = true
+            showText = true
+            currentOutput = ""
+            return
+        }
+
+        displayIcon = variantData.icon || "terminal"
+        displayText = variantData.displayText || ""
+        displayCommand = variantData.displayCommand || ""
+        clickCommand = variantData.clickCommand || ""
+        middleClickCommand = variantData.middleClickCommand || ""
+        rightClickCommand = variantData.rightClickCommand || ""
+        updateInterval = variantData.updateInterval || 0
+        showIcon = variantData.showIcon !== undefined ? variantData.showIcon : true
+        showText = variantData.showText !== undefined ? variantData.showText : true
+
+        if (displayCommand) {
+            Qt.callLater(refreshOutput)
+        } else {
+            currentOutput = displayText
+        }
+        if (updateInterval > 0) {
+            updateTimer.restart()
+        }
+    }
 
     onDisplayCommandChanged: {
         if (displayCommand) {
             Qt.callLater(refreshOutput)
+        } else {
+            currentOutput = displayText
+        }
+    }
+
+    onDisplayTextChanged: {
+        if (!displayCommand) {
+            currentOutput = displayText
         }
     }
 
     onUpdateIntervalChanged: {
-        updateTimer.restart()
+        if (updateInterval > 0) {
+            updateTimer.restart()
+        } else {
+            updateTimer.stop()
+        }
     }
 
     Component.onCompleted: {

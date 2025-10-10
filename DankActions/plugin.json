@@ -2,7 +2,7 @@
     "id": "dankActions",
     "name": "Dank Actions",
     "description": "Execute custom commands with dynamic output display and configurable icons",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "author": "Avenge Media",
     "icon": "terminal",
     "firstParty": true,

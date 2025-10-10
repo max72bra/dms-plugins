@@ -337,7 +337,8 @@ PluginSettings {
                     }
 
                     if (root.editingVariantId) {
-                        updateVariant(root.editingVariantId, nameField.text, variantConfig)
+                        variantConfig.name = nameField.text
+                        updateVariant(root.editingVariantId, variantConfig)
                     } else {
                         createVariant(nameField.text, variantConfig)
                     }
