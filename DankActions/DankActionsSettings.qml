@@ -112,6 +112,7 @@ PluginSettings {
                         id: nameField
                         width: parent.width
                         placeholderText: "e.g., Power Profile"
+                        keyNavigationTab: iconField
                     }
                 }
 
@@ -129,6 +130,8 @@ PluginSettings {
                         id: iconField
                         width: parent.width
                         placeholderText: "e.g., power_settings_new"
+                        keyNavigationBacktab: nameField
+                        keyNavigationTab: displayTextField
                     }
                 }
             }
@@ -147,6 +150,8 @@ PluginSettings {
                     id: displayTextField
                     width: parent.width
                     placeholderText: "Text to show (or leave empty if using command output)"
+                    keyNavigationBacktab: iconField
+                    keyNavigationTab: displayCommandField
                 }
             }
 
@@ -164,6 +169,8 @@ PluginSettings {
                     id: displayCommandField
                     width: parent.width
                     placeholderText: 'e.g., echo "Hello World" or powerprofilesctl get'
+                    keyNavigationBacktab: displayTextField
+                    keyNavigationTab: clickCommandField
                 }
 
                 StyledText {
@@ -189,6 +196,8 @@ PluginSettings {
                     id: clickCommandField
                     width: parent.width
                     placeholderText: "e.g., notify-send 'Clicked!' or cycle-power-profile.sh"
+                    keyNavigationBacktab: displayCommandField
+                    keyNavigationTab: middleClickCommandField
                 }
 
                 StyledText {
@@ -214,6 +223,8 @@ PluginSettings {
                     id: middleClickCommandField
                     width: parent.width
                     placeholderText: "e.g., notify-send 'Middle clicked!'"
+                    keyNavigationBacktab: clickCommandField
+                    keyNavigationTab: rightClickCommandField
                 }
             }
 
@@ -231,6 +242,8 @@ PluginSettings {
                     id: rightClickCommandField
                     width: parent.width
                     placeholderText: "e.g., notify-send 'Right clicked!'"
+                    keyNavigationBacktab: middleClickCommandField
+                    keyNavigationTab: updateIntervalField
                 }
             }
 
@@ -249,6 +262,7 @@ PluginSettings {
                     width: parent.width
                     placeholderText: "0"
                     text: "0"
+                    keyNavigationBacktab: rightClickCommandField
                 }
 
                 StyledText {
