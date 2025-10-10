@@ -7,7 +7,7 @@ import qs.Modules.Plugins
 
 PluginSettings {
     id: root
-    pluginId: "customActions"
+    pluginId: "dankActions"
 
     property string editingVariantId: ""
 
