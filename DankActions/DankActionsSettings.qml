@@ -11,13 +11,6 @@ PluginSettings {
 
     property string editingVariantId: ""
 
-    onVariantsChanged: {
-        variantsModel.clear()
-        for (var i = 0; i < variants.length; i++) {
-            variantsModel.append(variants[i])
-        }
-    }
-
     function loadVariantForEditing(variantData) {
         editingVariantId = variantData.id || ""
         nameField.text = variantData.name || ""
@@ -398,9 +391,7 @@ PluginSettings {
                 clip: true
                 spacing: Theme.spacingXS
 
-                model: ListModel {
-                    id: variantsModel
-                }
+                model: root.variantsModel
 
                 delegate: StyledRect {
                     required property var model
