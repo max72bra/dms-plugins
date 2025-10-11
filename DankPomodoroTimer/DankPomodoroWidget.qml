@@ -87,7 +87,7 @@ PluginComponent {
     function formatTime(seconds) {
         const mins = Math.floor(seconds / 60)
         const secs = seconds % 60
-        return mins + ":" + (secs < 10 ? "0" : "") + secs
+        return mins + "\n" + (secs < 10 ? "0" : "") + secs
     }
 
     function getStateColor() {
@@ -143,7 +143,6 @@ PluginComponent {
                 font.weight: Font.Medium
                 color: root.getStateColor()
                 anchors.horizontalCenter: parent.horizontalCenter
-                rotation: 90
             }
         }
     }
