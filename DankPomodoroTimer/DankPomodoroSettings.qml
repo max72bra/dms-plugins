@@ -7,7 +7,7 @@ import qs.Modules.Plugins
 
 PluginSettings {
     id: root
-    pluginId: "pomodoroTimer"
+    pluginId: "dankPomodoroTimer"
 
     StyledText {
         width: parent.width
