@@ -14,20 +14,52 @@ PluginComponent {
     property bool autoStartBreaks: pluginData.autoStartBreaks ?? false
     property bool autoStartPomodoros: pluginData.autoStartPomodoros ?? false
 
-    property int remainingSeconds: 0
-    property int totalSeconds: workDuration * 60
-    property bool isRunning: false
-    property string timerState: "work"
-    property int completedPomodoros: 0
+    PluginGlobalVar {
+        id: globalRemainingSeconds
+        varName: "remainingSeconds"
+        defaultValue: 0
+    }
+
+    PluginGlobalVar {
+        id: globalTotalSeconds
+        varName: "totalSeconds"
+        defaultValue: 0
+    }
+
+    PluginGlobalVar {
+        id: globalIsRunning
+        varName: "isRunning"
+        defaultValue: false
+    }
+
+    PluginGlobalVar {
+        id: globalTimerState
+        varName: "timerState"
+        defaultValue: "work"
+    }
+
+    PluginGlobalVar {
+        id: globalCompletedPomodoros
+        varName: "completedPomodoros"
+        defaultValue: 0
+    }
+
+    PluginGlobalVar {
+        id: globalTimerOwnerId
+        varName: "timerOwnerId"
+        defaultValue: ""
+    }
+
+    property string instanceId: Math.random().toString(36).substring(2)
 
     Timer {
         id: pomodoroTimer
         interval: 1000
         repeat: true
-        running: root.isRunning
+        running: globalIsRunning.value && globalTimerOwnerId.value === root.instanceId
         onTriggered: {
-            if (root.remainingSeconds > 0) {
-                root.remainingSeconds--
+            if (globalRemainingSeconds.value > 0) {
+                globalRemainingSeconds.set(globalRemainingSeconds.value - 1)
             } else {
                 root.timerComplete()
             }
@@ -35,11 +67,11 @@ PluginComponent {
     }
 
     function timerComplete() {
-        root.isRunning = false
+        globalIsRunning.set(false)
 
-        if (root.timerState === "work") {
-            root.completedPomodoros++
-            const isLongBreak = root.completedPomodoros % 4 === 0
+        if (globalTimerState.value === "work") {
+            globalCompletedPomodoros.set(globalCompletedPomodoros.value + 1)
+            const isLongBreak = globalCompletedPomodoros.value % 4 === 0
 
             Quickshell.execDetached(["sh", "-c", "notify-send 'Pomodoro Complete' 'Time for a " + (isLongBreak ? "long" : "short") + " break!' -u normal"])
 
@@ -55,33 +87,45 @@ PluginComponent {
     }
 
     function startWork(autoStart) {
-        root.timerState = "work"
-        root.totalSeconds = root.workDuration * 60
-        root.remainingSeconds = root.totalSeconds
-        root.isRunning = autoStart ?? false
+        globalTimerState.set("work")
+        globalTotalSeconds.set(root.workDuration * 60)
+        globalRemainingSeconds.set(globalTotalSeconds.value)
+        if (autoStart) {
+            globalTimerOwnerId.set(root.instanceId)
+        }
+        globalIsRunning.set(autoStart ?? false)
     }
 
     function startShortBreak(autoStart) {
-        root.timerState = "shortBreak"
-        root.totalSeconds = root.shortBreakDuration * 60
-        root.remainingSeconds = root.totalSeconds
-        root.isRunning = autoStart ?? false
+        globalTimerState.set("shortBreak")
+        globalTotalSeconds.set(root.shortBreakDuration * 60)
+        globalRemainingSeconds.set(globalTotalSeconds.value)
+        if (autoStart) {
+            globalTimerOwnerId.set(root.instanceId)
+        }
+        globalIsRunning.set(autoStart ?? false)
     }
 
     function startLongBreak(autoStart) {
-        root.timerState = "longBreak"
-        root.totalSeconds = root.longBreakDuration * 60
-        root.remainingSeconds = root.totalSeconds
-        root.isRunning = autoStart ?? false
+        globalTimerState.set("longBreak")
+        globalTotalSeconds.set(root.longBreakDuration * 60)
+        globalRemainingSeconds.set(globalTotalSeconds.value)
+        if (autoStart) {
+            globalTimerOwnerId.set(root.instanceId)
+        }
+        globalIsRunning.set(autoStart ?? false)
     }
 
     function toggleTimer() {
-        root.isRunning = !root.isRunning
+        if (!globalIsRunning.value) {
+            globalTimerOwnerId.set(root.instanceId)
+        }
+        globalIsRunning.set(!globalIsRunning.value)
     }
 
     function resetTimer() {
-        root.isRunning = false
-        root.remainingSeconds = root.totalSeconds
+        globalIsRunning.set(false)
+        globalRemainingSeconds.set(globalTotalSeconds.value)
     }
 
     function formatTime(seconds) {
@@ -91,18 +135,26 @@ PluginComponent {
     }
 
     function getStateColor() {
-        if (root.timerState === "work") return Theme.primary
-        if (root.timerState === "shortBreak") return Theme.success
+        if (globalTimerState.value === "work") return Theme.primary
+        if (globalTimerState.value === "shortBreak") return Theme.success
         return Theme.warning
     }
 
     function getStateIcon() {
-        if (root.timerState === "work") return "work"
+        if (globalTimerState.value === "work") return "work"
         return "coffee"
     }
 
-    Component.onCompleted: {
-        startWork(false)
+    Timer {
+        id: initTimer
+        interval: 100
+        repeat: false
+        running: true
+        onTriggered: {
+            if (globalRemainingSeconds.value === 0 && globalTotalSeconds.value === 0) {
+                startWork(false)
+            }
+        }
     }
 
     horizontalBarPill: Component {
@@ -117,7 +169,7 @@ PluginComponent {
             }
 
             StyledText {
-                text: root.formatTime(root.remainingSeconds)
+                text: root.formatTime(globalRemainingSeconds.value)
                 font.pixelSize: Theme.fontSizeSmall
                 font.weight: Font.Medium
                 color: root.getStateColor()
@@ -138,7 +190,7 @@ PluginComponent {
             }
 
             StyledText {
-                text: root.formatTime(root.remainingSeconds)
+                text: root.formatTime(globalRemainingSeconds.value)
                 font.pixelSize: Theme.fontSizeSmall
                 font.weight: Font.Medium
                 color: root.getStateColor()
@@ -154,8 +206,8 @@ PluginComponent {
 
             headerText: "Pomodoro Timer"
             detailsText: {
-                if (root.timerState === "work") return "Focus session • " + root.completedPomodoros + " completed"
-                if (root.timerState === "shortBreak") return "Short break"
+                if (globalTimerState.value === "work") return "Focus session • " + globalCompletedPomodoros.value + " completed"
+                if (globalTimerState.value === "shortBreak") return "Short break"
                 return "Long break"
             }
             showCloseButton: true
@@ -193,7 +245,7 @@ PluginComponent {
                                 const centerX = width / 2
                                 const centerY = height / 2
                                 const radius = (width - 8) / 2
-                                const progress = root.remainingSeconds / root.totalSeconds
+                                const progress = globalRemainingSeconds.value / globalTotalSeconds.value
                                 const startAngle = -Math.PI / 2
                                 const endAngle = startAngle + (2 * Math.PI * progress)
                                 ctx.arc(centerX, centerY, radius, startAngle, endAngle, false)
@@ -201,8 +253,8 @@ PluginComponent {
                             }
 
                             Connections {
-                                target: root
-                                function onRemainingSecondsChanged() {
+                                target: globalRemainingSeconds
+                                function onValueChanged() {
                                     progressCanvas.requestPaint()
                                 }
                             }
@@ -213,7 +265,7 @@ PluginComponent {
                             spacing: Theme.spacingXS
 
                             StyledText {
-                                text: root.formatTime(root.remainingSeconds)
+                                text: root.formatTime(globalRemainingSeconds.value)
                                 font.pixelSize: 36
                                 font.weight: Font.Bold
                                 color: root.getStateColor()
@@ -224,8 +276,8 @@ PluginComponent {
 
                             StyledText {
                                 text: {
-                                    if (root.timerState === "work") return "Work"
-                                    if (root.timerState === "shortBreak") return "Short Break"
+                                    if (globalTimerState.value === "work") return "Work"
+                                    if (globalTimerState.value === "shortBreak") return "Short Break"
                                     return "Long Break"
                                 }
                                 font.pixelSize: Theme.fontSizeMedium
@@ -248,7 +300,7 @@ PluginComponent {
 
                         DankIcon {
                             anchors.centerIn: parent
-                            name: root.isRunning ? "pause" : "play_arrow"
+                            name: globalIsRunning.value ? "pause" : "play_arrow"
                             size: 32
                             color: root.getStateColor()
                         }
@@ -342,7 +394,7 @@ PluginComponent {
                             }
 
                             StyledText {
-                                text: root.completedPomodoros + " pomodoros completed"
+                                text: globalCompletedPomodoros.value + " pomodoros completed"
                                 font.pixelSize: Theme.fontSizeMedium
                                 color: Theme.surfaceText
                                 anchors.verticalCenter: parent.verticalCenter
@@ -350,7 +402,7 @@ PluginComponent {
                         }
 
                         StyledText {
-                            text: "Next long break after " + (4 - (root.completedPomodoros % 4)) + " more"
+                            text: "Next long break after " + (4 - (globalCompletedPomodoros.value % 4)) + " more"
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.surfaceVariantText
                             leftPadding: Theme.iconSize + Theme.spacingM
