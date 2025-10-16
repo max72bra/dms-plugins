@@ -128,10 +128,10 @@ PluginComponent {
         globalRemainingSeconds.set(globalTotalSeconds.value)
     }
 
-    function formatTime(seconds) {
+    function formatTime(seconds, isVertical = false) {
         const mins = Math.floor(seconds / 60)
         const secs = seconds % 60
-        return mins + "\n" + (secs < 10 ? "0" : "") + secs
+        return isVertical ? mins + "\n" + (secs < 10 ? "0" : "") + secs : mins + " " + (secs < 10 ? "0" : "") + secs
     }
 
     function getStateColor() {
@@ -172,7 +172,7 @@ PluginComponent {
                 text: root.formatTime(globalRemainingSeconds.value)
                 font.pixelSize: Theme.fontSizeSmall
                 font.weight: Font.Medium
-                color: root.getStateColor()
+                color: Theme.surfaceVariantText
                 anchors.verticalCenter: parent.verticalCenter
             }
         }
@@ -190,10 +190,10 @@ PluginComponent {
             }
 
             StyledText {
-                text: root.formatTime(globalRemainingSeconds.value)
+                text: root.formatTime(globalRemainingSeconds.value, true)
                 font.pixelSize: Theme.fontSizeSmall
                 font.weight: Font.Medium
-                color: root.getStateColor()
+                color: Theme.surfaceVariantText
                 anchors.horizontalCenter: parent.horizontalCenter
             }
         }
