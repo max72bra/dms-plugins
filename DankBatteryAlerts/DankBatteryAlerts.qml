@@ -7,6 +7,7 @@ import qs.Modules.Plugins
 
 PluginComponent {
     id: root
+    Item {}
 
     property bool enableCriticalAlert: pluginData.enableCriticalAlert ?? true
     property int criticalThreshold: pluginData.criticalThreshold ?? 10
