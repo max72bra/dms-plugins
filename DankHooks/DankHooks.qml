@@ -25,12 +25,20 @@ PluginComponent {
     property string hookDoNotDisturb: pluginData.doNotDisturb || ""
     property string hookMediaPlaying: pluginData.mediaPlaying || ""
     property string hookIdleStateActive: pluginData.idleStateActive || ""
+    property string hookMonitorWallpaper: pluginData.monitorWallpaper || ""
 
     Connections {
         target: SessionData
         function onWallpaperPathChanged() {
             if (hookWallpaperPath) {
                 executeHook(hookWallpaperPath, "onWallpaperChanged", SessionData.wallpaperPath)
+            }
+        }
+
+        function onMonitorWallpapersChanged() {
+            if (hookMonitorWallpaper) {
+                const wallpapersJson = JSON.stringify(SessionData.monitorWallpapers)
+                executeHook(hookMonitorWallpaper, "onMonitorWallpapersChanged", wallpapersJson)
             }
         }
 

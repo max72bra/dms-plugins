@@ -44,6 +44,14 @@ PluginSettings {
         }
 
         StringSetting {
+            settingKey: "monitorWallpaper"
+            label: "Per-Monitor Wallpapers Changed"
+            description: "Hook: onMonitorWallpapersChanged | Value: JSON object with all monitors (e.g., '{\"eDP-1\":\"/path1.jpg\",\"DP-2\":\"/path2.jpg\"}')"
+            placeholder: "/path/to/monitor-wallpaper-hook.sh"
+            defaultValue: ""
+        }
+
+        StringSetting {
             settingKey: "lightMode"
             label: "Light/Dark Mode Changed"
             description: "Hook: onLightModeChanged | Value: 'light' or 'dark'"
