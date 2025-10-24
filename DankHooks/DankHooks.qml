@@ -185,7 +185,12 @@ PluginComponent {
             property string hookName: ""
             property string hookValue: ""
 
-            command: ["sh", "-c", `${hookScript} "${hookName}" "${hookValue}"`]
+            command: ["sh", "-c", "$HOOK_SCRIPT \"$HOOK_NAME\" \"$HOOK_VALUE\""]
+            environment: {
+                "HOOK_SCRIPT": hookScript,
+                "HOOK_NAME": hookName,
+                "HOOK_VALUE": hookValue
+            }
 
             stdout: StdioCollector {
                 onStreamFinished: {
