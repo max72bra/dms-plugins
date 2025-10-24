@@ -185,7 +185,7 @@ PluginComponent {
             property string hookName: ""
             property string hookValue: ""
 
-            command: [hookScript, hookName, hookValue]
+            command: ["sh", "-c", `${hookScript} "${hookName}" "${hookValue}"`]
 
             stdout: StdioCollector {
                 onStreamFinished: {
