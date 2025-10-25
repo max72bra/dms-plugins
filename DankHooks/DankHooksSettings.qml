@@ -112,6 +112,46 @@ PluginSettings {
             defaultValue: ""
         }
 
+        StringSetting {
+            settingKey: "hookPowerRequestLock"
+            label: "Lock Screen Event Triggered"
+            description: "Hook: onLockRequested | Value: empty"
+            placeholder: "/path/to/sessionlock-hook.sh"
+            defaultValue: ""
+        }
+
+        StringSetting {
+            settingKey: "hookPowerMonitorOff"
+            label: "Monitor Off Event Triggered"
+            description: "Hook: onRequestMonitorOff | Value: empty"
+            placeholder: "/path/to/monitoroff-hook.sh"
+            defaultValue: ""
+        }
+
+        StringSetting {
+            settingKey: "hookPowerMonitorOn"
+            label: "Monitor On Event Triggered"
+            description: "Hook: onRequestMonitorOn | Value: empty"
+            placeholder: "/path/to/monitoron-hook.sh"
+            defaultValue: ""
+        }
+
+        StringSetting {
+            settingKey: "hookPowerSuspend"
+            label: "Suspend Event Triggered"
+            description: "Hook: onRequestSuspend | Value: empty"
+            placeholder: "/path/to/suspend-hook.sh"
+            defaultValue: ""
+        }
+
+        StringSetting {
+            settingKey: "hookPowerHibernate"
+            label: "Hibernate Event Triggered"
+            description: "Hook: onRequestHibernate | Value: empty"
+            placeholder: "/path/to/hibernate-hook.sh"
+            defaultValue: ""
+        }
+
         StyledRect {
             width: parent.width
             height: 1
