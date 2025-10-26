@@ -14,6 +14,11 @@ PluginComponent {
     property string hookBatteryLevel: pluginData.batteryLevel || ""
     property string hookBatteryCharging: pluginData.batteryCharging || ""
     property string hookBatteryPluggedIn: pluginData.batteryPluggedIn || ""
+    property string hookPowerRequestLock: pluginData.hookPowerRequestLock || ""
+    property string hookPowerMonitorOff: pluginData.hookPowerMonitorOff || ""
+    property string hookPowerMonitorOn: pluginData.hookPowerMonitorOn || ""
+    property string hookPowerSuspend: pluginData.hookPowerSuspend || ""
+    property string hookPowerHibernate: pluginData.hookPowerHibernate || ""
     property string hookWifiConnected: pluginData.wifiConnected || ""
     property string hookWifiSSID: pluginData.wifiSSID || ""
     property string hookEthernetConnected: pluginData.ethernetConnected || ""
@@ -90,6 +95,40 @@ PluginComponent {
             }
         }
     }
+    
+    Connections {
+         target: IdleService
+         
+         function onLockRequested() {
+             if (hookPowerRequestLock) {
+                 executeHook(hookPowerRequestLock, "onLockRequested", "")
+             }
+         }
+         
+         function onRequestMonitorOff() {
+             if (hookPowerMonitorOff) {
+                 executeHook(hookPowerMonitorOff, "onRequestMonitorOff", "")
+             }
+         }
+         
+         function onRequestMonitorOn() {
+             if (hookPowerMonitorOn) {
+                 executeHook(hookPowerMonitorOn, "onRequestMonitorOn", "")
+             }
+         }
+         
+         function onRequestSuspend() {
+             if (hookPowerSuspend) {
+                 executeHook(hookPowerSuspend, "onRequestSuspend", "")
+             }
+         }
+         
+         function onRequestHibernate() {
+             if (hookPowerHibernate) {
+                 executeHook(hookPowerHibernate, "onRequestHibernate", "")
+             }
+         }
+     }
 
     Connections {
         target: NetworkService
