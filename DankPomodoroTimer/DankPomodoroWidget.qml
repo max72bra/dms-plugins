@@ -14,6 +14,33 @@ PluginComponent {
     property bool autoStartBreaks: pluginData.autoStartBreaks ?? false
     property bool autoStartPomodoros: pluginData.autoStartPomodoros ?? false
 
+    onWorkDurationChanged: {
+        if (globalTimerState.value === "work" && globalTotalSeconds.value > 0) {
+            const newTotal = workDuration * 60
+            const elapsed = globalTotalSeconds.value - globalRemainingSeconds.value
+            globalTotalSeconds.set(newTotal)
+            globalRemainingSeconds.set(Math.max(1, newTotal - elapsed))
+        }
+    }
+
+    onShortBreakDurationChanged: {
+        if (globalTimerState.value === "shortBreak" && globalTotalSeconds.value > 0) {
+            const newTotal = shortBreakDuration * 60
+            const elapsed = globalTotalSeconds.value - globalRemainingSeconds.value
+            globalTotalSeconds.set(newTotal)
+            globalRemainingSeconds.set(Math.max(1, newTotal - elapsed))
+        }
+    }
+
+    onLongBreakDurationChanged: {
+        if (globalTimerState.value === "longBreak" && globalTotalSeconds.value > 0) {
+            const newTotal = longBreakDuration * 60
+            const elapsed = globalTotalSeconds.value - globalRemainingSeconds.value
+            globalTotalSeconds.set(newTotal)
+            globalRemainingSeconds.set(Math.max(1, newTotal - elapsed))
+        }
+    }
+
     PluginGlobalVar {
         id: globalRemainingSeconds
         varName: "remainingSeconds"
